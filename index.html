@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>IRCTC Style Login with QR Scanner & Real-Time Location Tracker</title>
+    <title>NavX</title>
+    <link rel="icon" type="image/svg" href="images/image.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -73,21 +74,17 @@
     <div id="locationOptionsPage" class="container">
         <h2>Select Your Desired Location</h2>
         <div class="location-buttons">
-            <button onclick="navigateTo('Ticket Counter')">Ticket Counter</button>
-            <button onclick="navigateTo('Entrance')">Entrance</button>
-            <button onclick="navigateTo('Restroom')">Restroom</button>
-            <button onclick="navigateTo('Parking')">Parking</button>
-            <button onclick="navigateTo('Cloak Room')">Cloak Room</button>
-            <button onclick="navigateTo('Platform 1')">Platform 1</button>
-            <button onclick="navigateTo('Platform 2')">Platform 2</button>
-            <button onclick="navigateTo('Platform 3')">Platform 3</button>
-            <button onclick="navigateTo('Platform 4')">Platform 4</button>
-            <button onclick="navigateTo('Platform 5')">Platform 5</button>
-            <button onclick="navigateTo('Platform 6')">Platform 6</button>
-            <button onclick="navigateTo('Platform 7')">Platform 7</button>
-            <button onclick="navigateTo('Platform 8')">Platform 8</button>
-            <button onclick="navigateTo('Platform 9')">Platform 9</button>
-            <button onclick="navigateTo('Platform 10')">Platform 10</button>
+            <button onclick="navigateTo('12.117726923060427, 79.61618647278716')">ADMIN</button>
+            <button onclick="navigateTo('12.116063, 79.616174')">IT BLOCK</button>
+            <button onclick="navigateTo('12.116308528790197, 79.61573832843764')">CSE BLOCK</button>
+            <button onclick="navigateTo('12.117224794508411, 79.61585802192863')">ECE BLOCK</button>
+            <button onclick="navigateTo('12.116926426167042, 79.61575102876378')">S&H BLOCK</button>
+            <button onclick="navigateTo('12.115994051964053, 79.61497871287148')">CANTEEN</button>
+            <button onclick="navigateTo('12.115952991661908, 79.61465735913677')">HOTEL MANAGEMENT</button>
+            <button onclick="navigateTo('12.116252640251, 79.6140544483011')">NURSING</button>
+            <button onclick="navigateTo('12.11768034529726, 79.61552534762032')">GROUND </button>
+            <button onclick="navigateTo('12.117676349990978, 79.61437288175358')">BOYS HOSTEL</button>
+            
         </div>
     </div>
 
@@ -112,11 +109,11 @@
             document.getElementById('loginPage').style.display = 'flex';
         }
 
-        function goToQRScanner() {
+         function goToQRScanner() {
             document.getElementById('dashboardPage').style.display = 'none';
             document.getElementById('qrScannerPage').style.display = 'flex';
             startScanner();
-        }
+         }
 
         function startScanner() {
             const video = document.getElementById('video');
