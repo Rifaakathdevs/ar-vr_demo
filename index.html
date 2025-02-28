@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>IRCTC Style Login with QR Scanner & Real-Time Location Tracker</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; background: linear-gradient(to bottom right, #f3f4f6, #e5e7eb);
+            font-family: Arial, sans-serif; overflow: hidden;
+        }
+        .container {
+            background-color: white; padding: 2rem; border-radius: 1rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1); width: 100%; max-width: 400px;
+            text-align: center; display: flex; flex-direction: column; justify-content: center;
+        }
+        h2 { margin-bottom: 1.5rem; color: #1f2937; }
+        input[type="text"], input[type="password"] {
+            width: 100%; padding: 1rem; margin-bottom: 1rem;
+            border-radius: 0.5rem; border: 1px solid #d1d5db; font-size: 1rem;
+        }
+        a { color: #2563eb; text-decoration: none; margin-bottom: 1rem; font-size: 0.9rem; }
+        a:hover { text-decoration: underline; }
+        button {
+            width: 100%; padding: 1rem; border-radius: 0.5rem;
+            border: none; background-color: #ef4444; color: white;
+            font-weight: bold; font-size: 1rem; cursor: pointer;
+        }
+        button:hover { background-color: #dc2626; }
+        #qrScannerPage, #locationPage, #locationOptionsPage, #dashboardPage { display: none; }
+        video { width: 100%; height: 80vh; border-radius: 0.5rem; object-fit: cover; }
+        iframe { width: 100%; height: 50vh; border-radius: 0.5rem; margin-top: 1rem; border: none; }
+        .error-log { color: red; font-size: 0.9rem; margin-top: 1rem; }
+        .location-buttons button {
+            margin: 0.5rem 0; background-color: #2563eb;
+        }
+        .location-buttons button:hover { background-color: #1d4ed8; }
+    </style>
+</head>
+<body>
+    <div id="loginPage" class="container">
+        <h2>IRCTC Login Portal</h2>
+        <input type="text" id="username" placeholder="Enter Username" required>
+        <input type="password" id="password" placeholder="Enter Password" required>
+        <a href="#" id="forgotPassword">Forgot Password?</a>
+        <button onclick="login()">Login</button>
+        <p>Don't have an account? <a href="#" id="signUp">Sign Up</a></p>
+    </div>
+
+    <div id="dashboardPage" class="container">
+        <h2>Welcome, <span id="displayUsername"></span>!</h2>
+        <p>Your real-time location and navigation services are available.</p>
+        <button onclick="goToQRScanner()">Scan QR for Location</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+
+    <div id="qrScannerPage" class="container">
+        <h2>Scan QR to Fetch Real-Time Location</h2>
+        <video id="video" playsinline autoplay></video>
+        <p id="cameraError" class="error-log"></p>
+        <button onclick="stopScanner()">Stop Scanner</button>
+    </div>
+
+    <div id="locationPage" class="container">
+        <h2>Your Real-Time Location Details</h2>
+        <pre id="locationInfo">Fetching real-time location...</pre>
+        <iframe id="mapFrame" loading="lazy" allowfullscreen></iframe>
+        <button onclick="goToLocationOptions()">Next</button>
+    </div>
+
+    <div id="locationOptionsPage" class="container">
+        <h2>Select Your Desired Location</h2>
+        <div class="location-buttons">
+            <button onclick="navigateTo('Ticket Counter')">Ticket Counter</button>
+            <button onclick="navigateTo('Entrance')">Entrance</button>
+            <button onclick="navigateTo('Restroom')">Restroom</button>
+            <button onclick="navigateTo('Parking')">Parking</button>
+            <button onclick="navigateTo('Cloak Room')">Cloak Room</button>
+            <button onclick="navigateTo('Platform 1')">Platform 1</button>
+            <button onclick="navigateTo('Platform 2')">Platform 2</button>
+            <button onclick="navigateTo('Platform 3')">Platform 3</button>
+            <button onclick="navigateTo('Platform 4')">Platform 4</button>
+            <button onclick="navigateTo('Platform 5')">Platform 5</button>
+            <button onclick="navigateTo('Platform 6')">Platform 6</button>
+            <button onclick="navigateTo('Platform 7')">Platform 7</button>
+            <button onclick="navigateTo('Platform 8')">Platform 8</button>
+            <button onclick="navigateTo('Platform 9')">Platform 9</button>
+            <button onclick="navigateTo('Platform 10')">Platform 10</button>
+        </div>
+    </div>
+
+    <script>
+        let userLatitude, userLongitude;
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username === '' || password === '') {
+                alert('Please fill in both fields.');
+            } else {
+                document.getElementById('displayUsername').innerText = username;
+                document.getElementById('loginPage').style.display = 'none';
+                document.getElementById('dashboardPage').style.display = 'flex';
+            }
+        }
+
+        function logout() {
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('loginPage').style.display = 'flex';
+        }
+
+        function goToQRScanner() {
+            document.getElementById('dashboardPage').style.display = 'none';
+            document.getElementById('qrScannerPage').style.display = 'flex';
+            startScanner();
+        }
+
+        function startScanner() {
+            const video = document.getElementById('video');
+            const errorLog = document.getElementById('cameraError');
+            errorLog.textContent = '';
+
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                errorLog.textContent = 'Camera API not supported by your browser.';
+                return;
+            }
+
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+                .then((stream) => {
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => video.play();
+                    setTimeout(() => { stopScanner(); fetchRealTimeLocation(); }, 5000);
+                })
+                .catch((err) => {
+                    errorLog.textContent = 'Error accessing camera: ' + err.message;
+                });
+        }
+
+        function stopScanner() {
+            const video = document.getElementById('video');
+            const stream = video.srcObject;
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            video.srcObject = null;
+            document.getElementById('qrScannerPage').style.display = 'none';
+        }
+
+        function fetchRealTimeLocation() {
+            document.getElementById('locationPage').style.display = 'flex';
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        userLatitude = position.coords.latitude;
+                        userLongitude = position.coords.longitude;
+                        document.getElementById('locationInfo').innerText = `Latitude: ${userLatitude}\nLongitude: ${userLongitude}`;
+                        document.getElementById('mapFrame').src = `https://www.google.com/maps?q=${userLatitude},${userLongitude}&hl=es;z=14&output=embed`;
+                    },
+                    (error) => {
+                        document.getElementById('locationInfo').innerText = 'Failed to fetch real-time location: ' + error.message;
+                    },
+                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                );
+            } else {
+                document.getElementById('locationInfo').innerText = 'Geolocation is not supported by your browser.';
+            }
+        }
+
+        function goToLocationOptions() {
+            document.getElementById('locationPage').style.display = 'none';
+            document.getElementById('locationOptionsPage').style.display = 'flex';
+        }
+
+        function navigateTo(locationName) {
+            alert(`Navigating to ${locationName} from current location (Lat: ${userLatitude}, Long: ${userLongitude}).`);
+            window.open(`https://www.google.com/maps/dir/${userLatitude},${userLongitude}/${locationName}`, '_blank');
+        }
+    </script>
+</body>
+</html>
